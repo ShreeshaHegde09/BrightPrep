@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import React from 'react'
 import { dummyInterviews } from '@/constants'
-import InterviewCard from '../Components/InterviewCard'
+import InterviewCard from '../components/InterviewCard'
 const Page=()=> {
 
   return (

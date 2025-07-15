@@ -1,4 +1,4 @@
-import Agent from '@/app/Components/Agent'
+import Agent from '@/app/components/Agent'
 import React from 'react'
 
 const page = () => {
