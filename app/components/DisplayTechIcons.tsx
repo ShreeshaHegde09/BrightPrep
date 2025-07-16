@@ -7,8 +7,17 @@ import Image from 'next/image';
 type TechIcon = { tech: string; url: string };
 type TechIconProps = { techStack: string[] };
 
-const DisplayTechIcons = async({ techStack }: TechIconProps) => {
-  const techIcons = await getTechLogos(techStack);
+const DisplayTechIcons = ({ techStack }: TechIconProps) => {
+  const [techIcons, setTechIcons] = useState<TechIcon[]>([]);
+
+  useEffect(() => {
+    const fetchIcons = async () => {
+      const icons = await getTechLogos(techStack);
+      setTechIcons(icons);
+    };
+
+    fetchIcons();
+  }, [techStack]);
   
   return (
     <div className='flex flex-row'>
