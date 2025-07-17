@@ -8,7 +8,9 @@ import { feedbackSchema } from "@/constants";
 
 
 
-export async function getInterviewByUserId(userId: string) : Promise<Interview[] | null> {
+export async function getInterviewByUserId(userId: string): Promise<Interview[] | null> {
+    
+    if (!userId) return null;
     const interviews = await db.collection('interviews')
         .where('userId', '==', userId)
         .orderBy('createdAt', 'desc')
