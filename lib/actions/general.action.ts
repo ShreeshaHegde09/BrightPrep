@@ -31,7 +31,6 @@ export async function getLatestInterviews( params :GetLatestInterviewsParams) : 
         .where('userId', '==', userId)
         .orderBy('createdAt', 'desc')
         .where('finalized', '==', true)
-        .where('userId', '!=', userId)
         .limit(limit)
         .get();
     

@@ -14,9 +14,6 @@ import { useRouter } from "next/navigation"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
 import { auth } from "@/firebase/client"
 import { signIn, signUp } from "@/lib/actions/auth.action"
-import { sign } from "crypto"
-
-
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -44,33 +41,19 @@ const AuthForm = ( { type }: {type: FormType}) => {
       if (type === "sign-in") {
         const { email, password } = values;
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
-        toast.success("Signed in successfully!");
-        router.push('/');
-      }
-      else {
-
-
-         const { name, email, password } = values;
         
-        const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
-
-        const idToken = await userCredentials.user.getIdToken();
-
+        // Get the ID token
+        const idToken = await userCredential.user.getIdToken();
+        
         if (!idToken) {
-          toast.error("Sign in Failed . Please try again.");
+          toast.error("Sign in failed. Please try again.");
           return;
         }
-        
-        await signIn({
-          email,idToken
-        });
 
-        const result = await signUp({
-          uid: userCredentials.user.uid,
-          name: name!,
+        // Call the server action to set session cookie
+        const result = await signIn({
           email,
-          password,
+          idToken
         });
 
         if (!result.success) {
@@ -78,27 +61,63 @@ const AuthForm = ( { type }: {type: FormType}) => {
           return;
         }
 
+        toast.success("Signed in successfully!");
+        router.push('/');
+        router.refresh(); // Refresh to update the session
+      }
+      else {
+        const { name, email, password } = values;
+        
+        const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
 
+        const idToken = await userCredentials.user.getIdToken();
+
+        if (!idToken) {
+          toast.error("Sign up failed. Please try again.");
+          return;
+        }
+        
+        // Call the server action to set session cookie
+        await signIn({
+          email,
+          idToken
+        });
+
+        const result = await signUp({
+          uid: userCredentials.user.uid,
+          name: name!,
+          email,
+        });
+
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
 
         toast.success("Account created successfully! Please sign in.");
         router.push('/sign-in');
       }
       form.reset();
 
-
-
-
-    
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting form:", error);
-      toast.error(`There was an error :${error}`);
-
-    }
       
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/user-not-found') {
+        toast.error("User not found. Please check your email or sign up.");
+      } else if (error.code === 'auth/wrong-password') {
+        toast.error("Incorrect password. Please try again.");
+      } else if (error.code === 'auth/email-already-in-use') {
+        toast.error("Email already in use. Please sign in instead.");
+      } else if (error.code === 'auth/weak-password') {
+        toast.error("Password is too weak. Please use a stronger password.");
+      } else {
+        toast.error(`There was an error: ${error.message}`);
+      }
+    }
   }
 
   const isSignin = type === "sign-in";
-
 
   return (
     <div className="card-border lg:min-w-[566px]">

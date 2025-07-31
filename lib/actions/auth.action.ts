@@ -1,7 +1,6 @@
 'use server';
 
 import { auth, db } from "@/firebase/admin";
-import { _success } from "zod/v4/core";
 import { cookies } from "next/headers";
 
 const ONE_WEEK = 60 * 60 * 24 * 7 ; // 7 days 
@@ -15,21 +14,23 @@ export async function signUp(params: SignUpParams) {
         if (userRecord.exists) {
             return {
                 success: false,
-                message: 'User already exists . Please login instead.'
+                message: 'User already exists. Please login instead.'
             };
         }
+        
         await db.collection('users').doc(uid).set({
             name,
-            email
-        })
+            email,
+            createdAt: new Date().toISOString()
+        });
+        
         return {
             success: true,
             message: 'Account created successfully! Please sign in.'
         };
 
-
     } catch (e : any) { 
-        console.error("Error screating user", e);
+        console.error("Error creating user", e);
 
         if (e.code === 'auth/email-already-exists') {
             return {
@@ -71,6 +72,16 @@ export async function signIn(params: SignInParams) {
             message: 'Failed to log into an account'
         };
     }
+}
+
+export async function signOut() {
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+    
+    return {
+        success: true,
+        message: 'Signed out successfully'
+    };
 }
 
 export async function setSessionCookie(idToken: string) {

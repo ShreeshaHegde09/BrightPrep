@@ -1,23 +1,35 @@
 import { generateText } from "ai";
-
 import { google } from "@ai-sdk/google";
-
 import { db } from "@/firebase/admin";
 
-
-
 export async function GET() { 
-    return Response.json({ success:true , data :"THANK YOU!" } , { status: 200 });
+    return Response.json({ success: true, data: "THANK YOU!" }, { status: 200 });
 }
 
 export async function POST(request: Request) {
-    const { type, role, level, techstack, amount, userid } = await request.json()
-    
     try {
+        const { type, role, level, techstack, amount, userid } = await request.json();
+        
+        // Validate required fields
+        if (!type || !role || !level || !techstack || !amount || !userid) {
+            return Response.json({ 
+                success: false, 
+                error: "Missing required fields" 
+            }, { status: 400 });
+        }
+
+        // Validate environment variables
+        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+            console.error("GOOGLE_GENERATIVE_AI_API_KEY is not set");
+            return Response.json({ 
+                success: false, 
+                error: "AI service configuration error" 
+            }, { status: 500 });
+        }
 
         const { text: questions } = await generateText({
             model: google("gemini-2.0-flash-001"),
-            prompt: ` Prepare questions for a job interview
+            prompt: `Prepare questions for a job interview
             The job role is ${role}.
             The job experience level is ${level}.
             The tech stack used in the job is: ${techstack}.
@@ -31,28 +43,50 @@ export async function POST(request: Request) {
             Thank you! <3`
         });
 
-
-        const interview = {
-            role, type, level,
-            techstack: techstack.split(','),
-            questions: JSON.parse(questions),
-            userId: userid,
-            finalised: true, 
-            coverImage: "public/covers/adobe.png",
-            createdAt: new Date().toISOString()
-
+        // Parse questions safely
+        let parsedQuestions;
+        try {
+            parsedQuestions = JSON.parse(questions);
+        } catch (parseError) {
+            console.error("Failed to parse questions:", parseError);
+            return Response.json({ 
+                success: false, 
+                error: "Failed to generate questions" 
+            }, { status: 500 });
         }
 
-        await db.collection('interviews').add(interview);
+        const interview = {
+            role, 
+            type, 
+            level,
+            techstack: Array.isArray(techstack) ? techstack : techstack.split(',').map((tech: string) => tech.trim()),
+            questions: parsedQuestions,
+            userId: userid,
+            finalized: false, // Changed from finalised to finalized for consistency
+            createdAt: new Date().toISOString()
+        };
 
-        return Response.json({ success: true }, { status: 200 });
+        const interviewRef = await db.collection('interviews').add(interview);
+
+        return Response.json({ 
+            success: true, 
+            interviewId: interviewRef.id 
+        }, { status: 200 });
         
-    } catch (error) {
-        console.error(error);
-        return Response.json({ success: false, error }, { status: 500 });
+    } catch (error: any) {
+        console.error("Error in interview generation:", error);
+        
+        // Handle specific errors
+        if (error.message?.includes('API key')) {
+            return Response.json({ 
+                success: false, 
+                error: "AI service configuration error" 
+            }, { status: 500 });
+        }
+        
+        return Response.json({ 
+            success: false, 
+            error: error.message || "Internal server error" 
+        }, { status: 500 });
     }
-
-
-
-
 }
