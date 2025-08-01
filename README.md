@@ -1,6 +1,6 @@
 # BrightPrep – AI-Powered Mock Interview Platform
 
-🚀 [Live Demo](https://bright-prep-ai.vercel.app/) | 🎥 [YouTube Tutorial](https://www.youtube.com/watch?v=8GK8R77Bd7g)
+🚀 [Live Demo](https://bright-prep-ai.vercel.app/)
 
 BrightPrep is a full-stack, AI-powered mock interview platform designed to help job seekers prepare confidently for real-world interviews. It features real-time voice-based mock interviews, AI-generated feedback, scoring analytics, and a clean, modern user interface.
 
@@ -97,13 +97,6 @@ Open `http://localhost:3000` to view the app in your browser.
 4. Respond to the interview questions naturally using your voice.
 5. Get real-time scores, suggestions, and a breakdown of your performance.
 6. View interview history and performance analytics on your dashboard.
-
----
-
-## 📺 Demo Video
-
-Watch the full project tutorial here:
-🎥 [https://www.youtube.com/watch?v=8GK8R77Bd7g](https://www.youtube.com/watch?v=8GK8R77Bd7g)
 
 ---
 
