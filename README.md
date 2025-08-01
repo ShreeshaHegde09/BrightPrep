@@ -14,9 +14,6 @@ BrightPrep is a full-stack, AI-powered mock interview platform designed to help 
 - **📊 Real-Time Feedback & Scoring**  
   Get instant feedback on your responses including communication clarity, confidence, and content quality.
 
-- **🧑‍💼 Role-Based Dashboards**  
-  Personalized dashboards for different user roles to track interview history, scores, and feedback.
-
 - **🔐 Secure Authentication & Data Storage**  
   User authentication and secure data storage handled by Firebase.
 
@@ -24,7 +21,7 @@ BrightPrep is a full-stack, AI-powered mock interview platform designed to help 
   Built using TailwindCSS and shadcn/ui for a modern and mobile-friendly experience.
 
 - **📈 Interview Analytics & Progress Tracking**  
-  Visual charts and metrics to analyze performance trends and improvement areas.
+  Score rating metrics to analyze overall performance trends and improvement areas.
 
 - **🔗 Google Gemini Integration**  
   Delivers contextual and structured suggestions to improve interview skills.
@@ -65,18 +62,14 @@ Create a `.env.local` file in the root directory and add your configuration keys
 
 ```env
 # Firebase Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+FIREBASE_SERVICE_ACCOUNT_KEY= your_firebase_service_account_key(json_format_without_newline_charecter(/n))
 
 # Vapi AI Key
-VAPI_API_KEY=your_vapi_api_key
+NEXT_PUBLIC_VAPI_WORKFLOW_ID=your_vapi_workflow_id
+NEXT_PUBLIC_VAPI_WEB_TOKEN=your_vapi_web_token
 
 # Google Gemini Key
-GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
 ```
 
 ### 4. Run the Development Server
