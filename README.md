@@ -62,7 +62,7 @@ Create a `.env.local` file in the root directory and add your configuration keys
 
 ```env
 # Firebase Configuration
-FIREBASE_SERVICE_ACCOUNT_KEY= your_firebase_service_account_key(json_format_without_newline_charecter(/n))
+FIREBASE_SERVICE_ACCOUNT_KEY= your_firebase_service_account_key(json_format_without_newline_charecter(\n))
 
 # Vapi AI Key
 NEXT_PUBLIC_VAPI_WORKFLOW_ID=your_vapi_workflow_id
