@@ -1,7 +1,3 @@
-
----
-
-````markdown
 # BrightPrep – AI-Powered Mock Interview Platform
 
 🚀 [Live Demo](https://bright-prep-ai.vercel.app/) | 🎥 [YouTube Tutorial](https://www.youtube.com/watch?v=8GK8R77Bd7g)
@@ -55,7 +51,7 @@ BrightPrep is a full-stack, AI-powered mock interview platform designed to help 
 ```bash
 git clone https://github.com/ShreeshaHegde09/BrightPrep.git
 cd BrightPrep
-````
+```
 
 ### 2. Install Dependencies
 
