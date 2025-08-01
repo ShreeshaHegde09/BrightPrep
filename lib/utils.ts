@@ -38,12 +38,25 @@ const techLogoMap: Record<string, string> = {
 type TechIcon = { tech: string; url: string };
 
 export async function getTechLogos(techStack: string[]): Promise<TechIcon[]> {
+  if (!techStack || !Array.isArray(techStack) || techStack.length === 0) {
+    return [];
+  }
+
   return techStack.map((tech) => {
+    if (!tech || typeof tech !== 'string') {
+      return {
+        tech: 'Unknown',
+        url: "/logos/default.svg",
+      };
+    }
+
     const key = tech.toLowerCase() as keyof typeof mappings;
     const normalized = mappings[key] || tech.toLowerCase();
+    const logoUrl = techLogoMap[normalized];
+    
     return {
       tech,
-      url: techLogoMap[normalized] || "/logos/default.svg",
+      url: logoUrl || "/logos/default.svg",
     };
   });
 }

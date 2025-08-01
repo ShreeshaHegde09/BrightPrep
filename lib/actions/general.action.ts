@@ -6,64 +6,80 @@ import { db } from "@/firebase/admin";
 import { generateObject } from "ai";
 import { feedbackSchema } from "@/constants";
 
-
-
 export async function getInterviewByUserId(userId: string): Promise<Interview[] | null> {
-    
     if (!userId) return null;
-    const interviews = await db.collection('interviews')
-        .where('userId', '==', userId)
-        .orderBy('createdAt', 'desc')
-        .get();
     
-    return interviews.docs.map(doc => ({
-
-        id: doc.id,
-        ...doc.data()
-
-    }))as Interview[];
+    try {
+        const interviews = await db.collection('interviews')
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        return interviews.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Interview[];
+    } catch (error) {
+        console.error('Error fetching interviews by user ID:', error);
+        return null;
+    }
 }
 
-export async function getLatestInterviews( params :GetLatestInterviewsParams) : Promise<Interview[] | null> {
-    const { userId , limit = 20 } = params;
+export async function getLatestInterviews(params: GetLatestInterviewsParams): Promise<Interview[] | null> {
+    const { userId, limit = 20 } = params;
     
-    const interviews = await db.collection('interviews')
-        .where('userId', '==', userId)
-        .orderBy('createdAt', 'desc')
-        .where('finalized', '==', true)
-        .limit(limit)
-        .get();
+    if (!userId) return null;
     
-    return interviews.docs.map(doc => ({
-
-        id: doc.id,
-        ...doc.data()
+    try {
+        const interviews = await db.collection('interviews')
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .where('finalized', '==', true)
+            .limit(limit)
+            .get();
         
-    }))as Interview[];
+        return interviews.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })) as Interview[];
+    } catch (error) {
+        console.error('Error fetching latest interviews:', error);
+        return null;
+    }
 }
 
 export async function getInterviewById(id: string): Promise<Interview | null> {
-  const doc = await db.collection('interviews').doc(id).get();
+    if (!id) return null;
+    
+    try {
+        const doc = await db.collection('interviews').doc(id).get();
 
-  if (!doc.exists) return null;
+        if (!doc.exists) return null;
 
-  return {
-    id: doc.id,
-    ...doc.data(),
-  } as Interview;
+        return {
+            id: doc.id,
+            ...doc.data(),
+        } as Interview;
+    } catch (error) {
+        console.error('Error fetching interview by ID:', error);
+        return null;
+    }
 }
 
-
 export async function createFeedback(params: CreateFeedbackParams) {
-    const { interviewId, userId, transcript ,feedbackId} = params;
+    const { interviewId, userId, transcript, feedbackId } = params;
+    
+    if (!interviewId || !userId || !transcript) {
+        return { success: false, error: 'Missing required parameters' };
+    }
+    
     try {
-
         const formattedTranscript = transcript
             .map((sentence: { role: string; content: string; }) => (
                 `- ${sentence.role}: ${sentence.content} \n`
             )).join('');
         
-        const { object :{totalScore,categoryScores,strengths,areasForImprovement,finalAssessment}} = await generateObject({
+        const { object: { totalScore, categoryScores, strengths, areasForImprovement, finalAssessment } } = await generateObject({
             model: google('gemini-2.0-flash-001', {
                 structuredOutputs: false,
             }),
@@ -82,48 +98,51 @@ export async function createFeedback(params: CreateFeedbackParams) {
         - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
         
         `,
-            system: " You are a proffessional Interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories "
+            system: " You are a professional Interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories "
         })
         
-        
-    const feedback = await db.collection('feedback').add({
-      interviewId,
-      userId,
-      totalScore,
-      categoryScores,
-      strengths,
-      areasForImprovement,
-      finalAssessment,
-      createdAt: new Date().toISOString(),
+        const feedback = await db.collection('feedback').add({
+            interviewId,
+            userId,
+            totalScore,
+            categoryScores,
+            strengths,
+            areasForImprovement,
+            finalAssessment,
+            createdAt: new Date().toISOString(),
         });
         
-   
-    return { success: true, feedbackId: feedback.id };
+        return { success: true, feedbackId: feedback.id };
 
-        
     } catch (e) {
         console.error('error saving feedback ', e)
-        
         return { success: false };
     }
 }
 
-export async function GetFeedbackByInterviewId( params :GetFeedbackByInterviewIdParams) : Promise<Feedback | null> {
-    const { interviewId , userId } = params;
+export async function GetFeedbackByInterviewId(params: GetFeedbackByInterviewIdParams): Promise<Feedback | null> {
+    const { interviewId, userId } = params;
     
-    const feedback = await db.collection('feedback')
-        .where('interviewId', '==', interviewId)
-        .where('userId', '==', userId)
-        .limit( 1 )
-        .get();
+    if (!interviewId || !userId) return null;
     
-    if (feedback.empty) return null;
+    try {
+        const feedback = await db.collection('feedback')
+            .where('interviewId', '==', interviewId)
+            .where('userId', '==', userId)
+            .limit(1)
+            .get();
+        
+        if (feedback.empty) return null;
 
-    const feedbackDoc = feedback.docs[0];
-    
-    return {
-        id: feedbackDoc.id,
-        ...feedbackDoc.data()
-    }as Feedback;
+        const feedbackDoc = feedback.docs[0];
+        
+        return {
+            id: feedbackDoc.id,
+            ...feedbackDoc.data()
+        } as Feedback;
+    } catch (error) {
+        console.error('Error fetching feedback by interview ID:', error);
+        return null;
+    }
 }
 

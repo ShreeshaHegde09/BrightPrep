@@ -8,49 +8,53 @@ import { getInterviewByUserId, getLatestInterviews } from '@/lib/actions/general
 
 const Page = async () => {
   const user = await getCurrentUser();
-  const userId = user?.id;
+  
+  if (!user?.id) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
-  const [ userInterviews ,latestInterviews ] = await Promise.all([
-    await getInterviewByUserId(user?.id!)|| [],
-    await getLatestInterviews({ userId: user?.id! })|| []
+  const [userInterviews, latestInterviews] = await Promise.all([
+    getInterviewByUserId(user.id) || [],
+    getLatestInterviews({ userId: user.id }) || []
   ]);
 
-  const hasPastInterviews = userInterviews?.length > 0;
-  const hasUpcomingInterviews = latestInterviews?.length >0; 
+  const hasPastInterviews = (userInterviews?.length || 0) > 0;
+  const hasUpcomingInterviews = (latestInterviews?.length || 0) > 0; 
 
   return (
     <>
       <section className='card-cta'>
         <div className='flex flex-col gap-6 max-w-lg'>
-          <h2 >Get Interview-Ready with AI Powered Practice & Feedback</h2>
+          <h2>Get Interview-Ready with AI Powered Practice & Feedback</h2>
        
-        <p className="text-lg">
-          Practice on real interview questions, get instant feedback, and improve your skills with personalized insights.
-        </p>
-        <Button asChild className='btn-primary max-sm:w-full' >
-
-          <Link href="/interview">Start an Interview</Link>
+          <p className="text-lg">
+            Practice on real interview questions, get instant feedback, and improve your skills with personalized insights.
+          </p>
+          <Button asChild className='btn-primary max-sm:w-full'>
+            <Link href="/interview">Start an Interview</Link>
           </Button>
-           </div>
+        </div>
         <Image src="/robot.png" alt="Robo-Buddy" width={400} height={400} className='max-sm:hidden'></Image>
-       
       </section>
       
       <section className='flex flex-col gap-6 mt-8'>
         <div>
-        <h2>Your Interviews</h2>
+          <h2>Your Interviews</h2>
           <div className="interviews-section">
             {
               hasPastInterviews ? (
-              userInterviews?.map((interview) => (
-                <InterviewCard key={interview.id} {...interview} />
-              ))
+                userInterviews?.map((interview) => (
+                  <InterviewCard key={interview.id} {...interview} />
+                ))
               ) : (
-                  <p>You haven't taken any interviews yet. </p>
-            )
+                <p>You haven't taken any interviews yet. </p>
+              )
             }
           </div>
-          
         </div>
       </section>
 
@@ -58,16 +62,15 @@ const Page = async () => {
         <h2>Take an Interview</h2>
         <div className="interviews-section">
           {
-              hasUpcomingInterviews ? (
+            hasUpcomingInterviews ? (
               latestInterviews?.map((interview) => (
                 <InterviewCard key={interview.id} {...interview} />
               ))
-              ) : (
-                  <p> There are no new interviews available </p>
+            ) : (
+              <p> There are no new interviews available </p>
             )
-            }
+          }
         </div>
-        
       </section>
     </>
   )

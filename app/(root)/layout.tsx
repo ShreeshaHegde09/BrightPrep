@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { ReactNode } from 'react'
 import { isAuthenticated, getCurrentUser } from '@/lib/actions/auth.action'
 import { redirect } from 'next/navigation'
-import SignOutButton from '../components/SignOutButton'
+import SignOutButton from '@/app/components/SignOutButton'
 
 interface Props {}
 
