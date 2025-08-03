@@ -112,6 +112,8 @@ export async function getCurrentUser() : Promise< User | null> {
         const userRecord = await db.collection('users').doc(decodedClaims.uid).get();
 
         if (!userRecord.exists) {
+            // User exists in Firebase Auth but not in Firestore
+            console.warn(`User ${decodedClaims.uid} exists in Auth but not in Firestore.`);
             return null;
         }
 
@@ -120,14 +122,28 @@ export async function getCurrentUser() : Promise< User | null> {
            id: userRecord.id,
         } as User;
     } catch (e : any) {
+        // Handle the specific error about user not existing
+        if (e.code === 'auth/user-not-found' || e.message?.includes('no user record corresponding')) {
+            console.warn("Invalid session cookie - user not found in Firebase Auth");
+            // Throw the error so the layout can catch it and handle the invalid session
+            throw new Error('INVALID_SESSION');
+        }
         console.error("Error getting current user", e);
         return null;
     }
 }
 
+
+
+export async function clearSession() {
+    'use server';
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+    return { success: true };
+}
+
 export async function isAuthenticated() {
     const user = await getCurrentUser();
-    
-    return !!user ;
+    return !!user;
 }
 
